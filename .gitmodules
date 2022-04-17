@@ -1,0 +1,3 @@
+[submodule "third_party/asio/asio"]
+	path = third_party/asio/asio
+	url = https://github.com/chriskohlhoff/asio.git
