@@ -1,0 +1,6 @@
+[submodule "mobdebug_wrapper/third_party/lua/lua"]
+	path = mobdebug_wrapper/third_party/lua/lua
+	url = https://github.com/lua/lua.git
+[submodule "mobdebug_wrapper/third_party/luasocket/luasocket"]
+	path = mobdebug_wrapper/third_party/luasocket/luasocket
+	url = https://github.com/lunarmodules/luasocket.git

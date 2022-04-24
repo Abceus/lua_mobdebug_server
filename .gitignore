@@ -1,2 +1,6 @@
-build
-scripts/mobdebug.lua
+**/build
+mobdebug_wrapper/scripts/mobdebug.lua
+mobdebug.lua
+TODO
+.cache
+.vscode
