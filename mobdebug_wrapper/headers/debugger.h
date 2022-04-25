@@ -2,6 +2,7 @@
 #define H_DEBUGGER
 
 #include <lua.h>
+#include "mobdebug_wrapper_exports.h"
 
 
 struct Debugger {
@@ -18,17 +19,17 @@ enum DebuggerStatus {
 
 typedef void (*ChangeStateCallbackFunction) (enum DebuggerStatus);
 
-struct Debugger* luad_create();
+MOBDEBUG_WRAPPER_EXPORTS struct Debugger* luad_create();
 
-void luad_init(struct Debugger* self);
-void luad_run(struct Debugger* self);
-void luad_update(struct Debugger* self);
-void luad_stop(struct Debugger* self);
-void luad_pause(struct Debugger* self);
-void luad_setBreakpoint(struct Debugger* self, const char* filename, int line);
-void luad_removeBreakpoint(struct Debugger* self, const char* filename, int line);
-enum DebuggerStatus luad_getStatus(struct Debugger* self);
-void luad_setStatusChangeCallback(struct Debugger* self, ChangeStateCallbackFunction function);
-void luad_handle(struct Debugger* self, const char* command);
+void MOBDEBUG_WRAPPER_EXPORTS luad_init(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_run(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_update(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_stop(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_pause(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_setBreakpoint(struct Debugger* self, const char* filename, int line);
+void MOBDEBUG_WRAPPER_EXPORTS luad_removeBreakpoint(struct Debugger* self, const char* filename, int line);
+MOBDEBUG_WRAPPER_EXPORTS enum DebuggerStatus luad_getStatus(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_setStatusChangeCallback(struct Debugger* self, ChangeStateCallbackFunction function);
+void MOBDEBUG_WRAPPER_EXPORTS luad_handle(struct Debugger* self, const char* command);
 
 #endif

@@ -5,7 +5,11 @@ project( lua )
 set( CMAKE_C_STANDARD 17 )
 
 add_library( lua
-                SHARED
+                STATIC
                 lua/onelua.c)
 
-target_link_libraries(lua m)
+target_include_directories( lua PUBLIC ./lua/)
+
+if (UNIX)
+	target_link_libraries(lua m)
+endif (UNIX)

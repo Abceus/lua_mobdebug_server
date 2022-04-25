@@ -26,10 +26,14 @@ if (WIN32)
 endif (WIN32)
 
 add_library( luasocket
-                SHARED
+				STATIC
                 ${CORE_SOURCES}
                 ${PLATFORM_SOURCES})
 
 target_include_directories( luasocket PUBLIC ./luasocket/src/)
 
-# target_link_libraries(lua m)
+target_link_libraries(luasocket lua)
+
+if(WIN32)
+  target_link_libraries(luasocket wsock32 ws2_32)
+endif()
