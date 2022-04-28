@@ -2,7 +2,7 @@
 #define H_DEBUGGER
 
 #include <lua.h>
-#include "mobdebug_wrapper_exports.h"
+// #include "mobdebug_wrapper_exports.h"
 
 
 struct Debugger {
@@ -16,6 +16,8 @@ enum DebuggerStatus {
     RUNNING,
     BREAK
 };
+
+#define MOBDEBUG_WRAPPER_EXPORTS 
 
 typedef void (*ChangeStateCallbackFunction) (enum DebuggerStatus);
 

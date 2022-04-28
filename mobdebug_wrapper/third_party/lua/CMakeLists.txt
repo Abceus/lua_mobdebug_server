@@ -10,6 +10,8 @@ add_library( lua
 
 target_include_directories( lua PUBLIC ./lua/)
 
+set_property(TARGET lua PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 if (UNIX)
 	target_link_libraries(lua m)
 endif (UNIX)
