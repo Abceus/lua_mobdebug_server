@@ -1,6 +1,8 @@
 local wrapper = {}
 
 function wrapper:init()
+	self.breakpoints = {}
+	self.currentBreakpoint = nil
     print("Call init function")
     -- self.debugger = require('mobdebug')
     self.status = "inited"
@@ -42,17 +44,23 @@ function wrapper:run()
 end
 
 function wrapper:update()
+	self.client:settimeout(0)
     local breakpoint = self.client:receive("*l")
+	self.client:settimeout()
     if not breakpoint then
-      print("Program finished")
+    --   print("Program finished")
       return
     end
     local _, _, status = string.find(breakpoint, "^(%d+)")
     if status == "200" then
-      -- don't need to do anything
+		self.currentBreakpoint = nil
     elseif status == "202" then
       _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
       if file and line then
+		self.currentBreakpoint = {
+			filename = file,
+			line = tonumber(line)
+		}
         self:setStatus("break")
         print(file, line)
       end
@@ -74,15 +82,32 @@ end
 
 function wrapper:setBreakpoint(filename, line)
     print("Call setBreakpoint function with argemunets", filename, line)
-    self.client:send("SETB " .. filename .. " " .. line .. "\n")
-    -- self.debugger.setbreakpoint(filename, line)
-    -- print(type(line))
-    -- self.debugger.handle("setb " .. filename .. " " .. line, self.client)
+	if self.client then
+    	self.client:send("SETB " .. filename .. " " .. line .. "\n")
+	end
+	if self.client == nil or self.client:receive("*l") == "200 OK" then
+		if self.breakpoints[filename] == nil then
+			self.breakpoints[filename] = {}
+		end
+		self.breakpoints[filename][line] = true
+	end
 end
 
 function wrapper:removeBreakpoint(filename, line)
     print("Call removeBreakpoint function with argemunets", filename, line)
-    -- self.debugger.removebreakpoint(filename, line)
+    if self.breakpoints[filename] then
+		self.breakpoints[filename][line] = nil
+	end
+end
+
+function wrapper:hasBreakpoint(filename, line)
+    print("Call hasBreakpoint function with argemunets", filename, line)
+	return self.breakpoints[filename] and self.breakpoints[filename][line]
+end
+
+function wrapper:getCurrentBreakpoint()
+    print("Call getCUrrentBreakpoint function")
+	return self.currentBreakpoint
 end
 
 function wrapper:getStatus()

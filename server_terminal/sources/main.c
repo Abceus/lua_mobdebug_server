@@ -13,7 +13,10 @@ void printChahgedStatus(enum DebuggerStatus newStatus) {
     printf("Status changed. New status: %d\n", newStatus);
     if(newStatus == BREAK) {
         printf("Continue");
-        luad_run(d);
+        luad_getCurrentBreakpoint(d);
+		if(d->currentBreakpoint != NULL) {
+			printf("Program breaked in file %s line %d", d->currentBreakpoint->filename, d->currentBreakpoint->line);
+		}
     }
 }
 
@@ -25,7 +28,7 @@ int main() {
     // printf("%d\n", luad_getStatus(d));
     // luad_pause(d);
     // printf("%d\n", luad_getStatus(d));
-    luad_setBreakpoint(d, "start.lua", 12);
+    luad_setBreakpoint(d, "d:/workspace/lua_debug/test.lua", 7);
     // luad_removeBreakpoint(d, "./test.lua", 12);
     luad_run(d);
     while(true) {

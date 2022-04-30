@@ -20,6 +20,8 @@ struct Debugger* luad_create() {
     }
     struct Debugger* result = malloc(sizeof(struct Debugger));
 
+	result->currentBreakpoint = NULL;
+
     lua_pushlightuserdata(L, (void *)&Key);
     lua_pushvalue(L, -2); 
     lua_settable(L, LUA_REGISTRYINDEX);
@@ -153,6 +155,57 @@ enum DebuggerStatus getStatusFromString(const char* str) {
         }
     }
     return INVALID;
+}
+
+void luad_getCurrentBreakpoint(struct Debugger* self) {
+	char* filename = NULL;
+	int line = -1;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "getCurrentBreakpoint") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pcall(self->L, 1, 1, 0);
+		if(lua_istable(self->L, -1)) {
+			lua_getfield(self->L, -1, "filename");
+			const char* fname = lua_tostring(self->L, -1);
+			auto fnameLen = strlen(fname);
+			filename = (char*)calloc(fnameLen+1, sizeof(char));
+			strcpy(filename, fname);
+			lua_remove(self->L, -1);
+			lua_getfield(self->L, -1, "line");
+			line = lua_tointeger(self->L, -1);
+			lua_remove(self->L, -1);
+		}
+        lua_remove(self->L, -1);
+    }
+	if(filename != NULL) {
+		if(self->currentBreakpoint == NULL) {
+   			self->currentBreakpoint = malloc(sizeof(struct Breakpoint));
+		}
+		auto fnameLen = strlen(filename);
+		if(self->currentBreakpoint->filename == NULL) {
+			self->currentBreakpoint->filename = (char*)calloc(fnameLen+1, sizeof(char));
+			self->currentBreakpoint->filename[0] = '\0';
+		}
+		auto filenameLen = strlen(self->currentBreakpoint->filename);
+		if(fnameLen > filenameLen) {
+			auto oldStr = self->currentBreakpoint->filename;
+			self->currentBreakpoint->filename = (char*)realloc(self->currentBreakpoint->filename, fnameLen+1 * sizeof(char));
+			if(self->currentBreakpoint->filename == NULL) {
+				free(oldStr);
+			}
+		}
+		if(self->currentBreakpoint->filename != NULL) {
+			strcpy(self->currentBreakpoint->filename, filename);
+		}
+		self->currentBreakpoint->line = line;
+	}
+	else {
+		if(self->currentBreakpoint != NULL) {
+			free(self->currentBreakpoint);
+		}
+		self->currentBreakpoint = NULL;
+	}
 }
 
 enum DebuggerStatus luad_getStatus(struct Debugger* self) {
