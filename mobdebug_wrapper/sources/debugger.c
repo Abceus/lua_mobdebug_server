@@ -168,7 +168,7 @@ void luad_getCurrentBreakpoint(struct Debugger* self) {
 		if(lua_istable(self->L, -1)) {
 			lua_getfield(self->L, -1, "filename");
 			const char* fname = lua_tostring(self->L, -1);
-			auto fnameLen = strlen(fname);
+			size_t fnameLen = strlen(fname);
 			filename = (char*)calloc(fnameLen+1, sizeof(char));
 			strcpy(filename, fname);
 			lua_remove(self->L, -1);
@@ -178,27 +178,30 @@ void luad_getCurrentBreakpoint(struct Debugger* self) {
 		}
         lua_remove(self->L, -1);
     }
+    lua_remove(self->L, -1);
 	if(filename != NULL) {
 		if(self->currentBreakpoint == NULL) {
    			self->currentBreakpoint = malloc(sizeof(struct Breakpoint));
+            self->currentBreakpoint->filename = NULL;
+            self->currentBreakpoint->line = -1;
 		}
-		auto fnameLen = strlen(filename);
+		size_t fnameLen = strlen(filename);
 		if(self->currentBreakpoint->filename == NULL) {
 			self->currentBreakpoint->filename = (char*)calloc(fnameLen+1, sizeof(char));
-			self->currentBreakpoint->filename[0] = '\0';
+			self->currentBreakpoint->filename[fnameLen] = '\0';
 		}
-		auto filenameLen = strlen(self->currentBreakpoint->filename);
+		size_t filenameLen = strlen(self->currentBreakpoint->filename);
 		if(fnameLen > filenameLen) {
-			auto oldStr = self->currentBreakpoint->filename;
+			char* oldStr = self->currentBreakpoint->filename;
 			self->currentBreakpoint->filename = (char*)realloc(self->currentBreakpoint->filename, fnameLen+1 * sizeof(char));
 			if(self->currentBreakpoint->filename == NULL) {
-				free(oldStr);
+				free((void*)oldStr);
 			}
 		}
 		if(self->currentBreakpoint->filename != NULL) {
 			strcpy(self->currentBreakpoint->filename, filename);
 		}
-		self->currentBreakpoint->line = line;
+	    self->currentBreakpoint->line = line;
 	}
 	else {
 		if(self->currentBreakpoint != NULL) {
