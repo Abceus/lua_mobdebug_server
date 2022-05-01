@@ -29,5 +29,5 @@ IF(NODE_VERSION_MINOR LESS_EQUAL 10)
   SWIG_ADD_LIBRARY(debugger TYPE MODULE LANGUAGE javascript SOURCES ../debugger.i)
   SWIG_LINK_LIBRARIES(debugger mobdebug_wrapper)
 ELSE()
-
+  
 ENDIF()

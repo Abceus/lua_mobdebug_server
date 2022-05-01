@@ -4,10 +4,15 @@ function wrapper:init()
 	self.breakpoints = {}
 	self.currentBreakpoint = nil
     print("Call init function")
-    -- self.debugger = require('mobdebug')
     self.status = "inited"
     self.statusChangeCallback = nil
+    self.client = nil
+end
 
+function wrapper:connect()
+    self.client = nil
+
+    print("Call connect function")
     local host = "*"
     local port = 8172
     
@@ -18,20 +23,12 @@ function wrapper:init()
     
     local server = socket.bind(host, port)
     self.client = server:accept()
-    
-    self.client:send("STEP\n")
-    self.client:receive("*l")
-    
-    local breakpoint = self.client:receive("*l")
-    local _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
-    if file and line then
-        print("Paused at file " .. file )
-        -- print("Type 'help' for commands")
-    else
-        local _, _, size = string.find(breakpoint, "^401 Error in Execution (%d+)%s*$")
-        if size then
-        print("Error in remote application: ")
-        print(self.client:receive(size))
+
+    self:removeAllBreakpointsServer()
+
+    for filename, lines in pairs(self.breakpoints) do
+        for line, _ in pairs(lines) do
+            self:setBreakpointServer(filename, line)
         end
     end
 end
@@ -39,31 +36,34 @@ end
 function wrapper:run()
     print("Call run function")
     -- self.debugger.handle("run", self.client)
-    self.client:send("RUN\n")
-    self:setStatus("running")
+    if self.client then
+        self.client:send("RUN\n")
+        self:setStatus("running")
+    end
 end
 
 function wrapper:update()
-	self.client:settimeout(0)
-    local breakpoint = self.client:receive("*l")
-	self.client:settimeout()
-    if not breakpoint then
-    --   print("Program finished")
-      return
-    end
-    local _, _, status = string.find(breakpoint, "^(%d+)")
-    if status == "200" then
-		self.currentBreakpoint = nil
-    elseif status == "202" then
-      _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
-      if file and line then
-		self.currentBreakpoint = {
-			filename = file,
-			line = tonumber(line)
-		}
-        self:setStatus("break")
-        print(file, line)
-      end
+    if self.client then
+        self.client:settimeout(0)
+        local breakpoint = self.client:receive("*l")
+        self.client:settimeout()
+        if not breakpoint then
+        --   print("Program finished")
+        return
+        end
+        local _, _, status = string.find(breakpoint, "^(%d+)")
+        if status == "200" then
+            self.currentBreakpoint = nil
+        elseif status == "202" then
+        _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
+        if file and line then
+            self.currentBreakpoint = {
+                filename = file,
+                line = tonumber(line)
+            }
+            self:setStatus("break")
+        end
+        end
     end
 end
 
@@ -76,28 +76,72 @@ end
 
 function wrapper:pause()
     print("Call pause function")
-    -- self.debugger.pause()
     self:setStatus("break")
 end
 
 function wrapper:setBreakpoint(filename, line)
     print("Call setBreakpoint function with argemunets", filename, line)
+	if self:setBreakpointServer(filename, line) then
+        self:setBreakpointClient(filename, line)
+    end
+end
+
+function wrapper:setBreakpointServer(filename, line)
+    print("Call setBreakpointServer function with argemunets", filename, line)
 	if self.client then
     	self.client:send("SETB " .. filename .. " " .. line .. "\n")
 	end
-	if self.client == nil or self.client:receive("*l") == "200 OK" then
-		if self.breakpoints[filename] == nil then
-			self.breakpoints[filename] = {}
-		end
-		self.breakpoints[filename][line] = true
+	return self.client == nil or self.client:receive("*l") == "200 OK"
+end
+
+function wrapper:setBreakpointClient(filename, line)
+    print("Call setBreakpointClient function with argemunets", filename, line)
+	if self.breakpoints[filename] == nil then
+		self.breakpoints[filename] = {}
 	end
+	self.breakpoints[filename][line] = true
 end
 
 function wrapper:removeBreakpoint(filename, line)
     print("Call removeBreakpoint function with argemunets", filename, line)
+    if self:removeBreakpointServer(filename, line) then
+        self:removeBreakpointClient(filename, line)
+    end
+end
+
+function wrapper:removeBreakpointServer(filename, line)
+    print("Call removeBreakpointServer function with argemunets", filename, line)
+    if self.client then
+        self.client:send("DELB " .. filename .. " " .. line .. "\n")
+    end
+	return self.client == nil or self.client:receive("*l") == "200 OK"
+end
+
+function wrapper:removeBreakpointClient(filename, line)
+    print("Call removeBreakpointClient function with argemunets", filename, line)
     if self.breakpoints[filename] then
-		self.breakpoints[filename][line] = nil
-	end
+        self.breakpoints[filename][line] = nil
+    end
+end
+
+function wrapper:removeAllBreakpoints()
+    print("Call removeAllBreakpoints function with argemunets")
+    if self:removeAllBreakpointsServer() then
+        self:removeAllBreakpointsClient()
+    end
+end
+
+function wrapper:removeAllBreakpointsServer()
+    print("Call removeAllBreakpointsServer function with argemunets")
+    if self.client then
+        self.client:send("DELB * 0 \n")
+    end
+	return self.client == nil or self.client:receive("*l") == "200 OK"
+end
+
+function wrapper:removeAllBreakpointsClient()
+    print("Call removeAllBreakpointsClient function with argemunets")
+    self.breakpoints = {}
 end
 
 function wrapper:hasBreakpoint(filename, line)
@@ -129,9 +173,8 @@ end
 
 function wrapper:handle(command)
     print("Call handle function with command: " .. command)
-    local file, line = self.debugger.handle(command, self.client)
-    if file or line then
-        self:setStatus("break")
+    if self.client then
+        self.client:send(command .. "\n")
     end
 end
 

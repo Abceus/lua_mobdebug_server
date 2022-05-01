@@ -45,6 +45,19 @@ void luad_init(struct Debugger* self) {
     lua_remove(self->L, -1);
 }
 
+void luad_connect(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "connect") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    lua_remove(self->L, -1);
+}
+
 void luad_run(struct Debugger* self) {
     lua_pushlightuserdata(self->L, (void *)&Key);
     lua_gettable(self->L, LUA_REGISTRYINDEX);

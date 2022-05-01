@@ -26,6 +26,7 @@ typedef void (*ChangeStateCallbackFunction) (enum DebuggerStatus);
 MOBDEBUG_WRAPPER_EXPORTS struct Debugger* luad_create();
 
 void MOBDEBUG_WRAPPER_EXPORTS luad_init(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_connect(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_run(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_update(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_stop(struct Debugger* self);
