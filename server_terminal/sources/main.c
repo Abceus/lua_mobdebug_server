@@ -12,7 +12,7 @@ struct Debugger* d;
 void printChahgedStatus(enum DebuggerStatus newStatus) {
     printf("Status changed. New status: %d\n", newStatus);
     if(newStatus == BREAK) {
-        printf("Continue");
+        printf("Continue\n");
         luad_getCurrentBreakpoint(d);
 		if(d->currentBreakpoint != NULL) {
 			printf("Program breaked in file %s line %d\n", d->currentBreakpoint->filename, d->currentBreakpoint->line);
