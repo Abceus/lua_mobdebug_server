@@ -6,6 +6,7 @@
 
 #include "test.h"
 #include "debugger.h"
+#include "collection.h"
 
 struct Debugger* d;
 
@@ -17,7 +18,7 @@ void printChahgedStatus(enum DebuggerStatus newStatus) {
 		if(d->currentBreakpoint != NULL) {
 			printf("Program breaked in file %s line %d\n", d->currentBreakpoint->filename, d->currentBreakpoint->line);
 		}
-        luad_run(d);
+        luad_getStack(d);
     }
 }
 

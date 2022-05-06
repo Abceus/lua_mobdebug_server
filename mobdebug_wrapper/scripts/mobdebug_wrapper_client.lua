@@ -88,4 +88,24 @@ function wrapper:handle(command, needAnswer)
     end
 end
 
+function wrapper:getStack()
+    print("Call client getStack function")
+    if self.client then
+        self.client:send("STACK\n")
+        local resp = self.client:receive("*l")
+        local _, _, status, res = string.find(resp, "^(%d+)%s+%w+%s+(.+)%s*$")
+        
+        local func, err = load(res)
+        if func == nil then
+          return nil, err
+        end
+        local ok, stack = pcall(func)
+        if not ok then
+          return nil, stack
+        end
+        return stack
+    end
+    return nil, "Client not connected"
+end
+
 return wrapper

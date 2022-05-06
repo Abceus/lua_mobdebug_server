@@ -37,5 +37,8 @@ MOBDEBUG_WRAPPER_EXPORTS enum DebuggerStatus luad_getStatus(struct Debugger* sel
 void MOBDEBUG_WRAPPER_EXPORTS luad_getCurrentBreakpoint(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_setStatusChangeCallback(struct Debugger* self, ChangeStateCallbackFunction function);
 void MOBDEBUG_WRAPPER_EXPORTS luad_handle(struct Debugger* self, const char* command);
+MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_getStack(struct Debugger* self);
+
+void MOBDEBUG_WRAPPER_EXPORTS luad_test(struct Debugger* self);
 
 #endif

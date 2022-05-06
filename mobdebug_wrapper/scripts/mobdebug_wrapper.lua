@@ -134,4 +134,72 @@ function wrapper:handle(command)
     end
 end
 
+function wrapper:getStack()
+    print("Call getStack function")
+    local result, error_ = self.client:getStack()
+    if result == nil then
+        print("Stack error: " .. error_)
+    end
+    return result
+end
+
+function wrapper:test()
+    print("Call test function")
+    if self.client.client then
+        self.client.client:send("STACK\n")
+        local resp = self.client.client:receive("*l")
+        local _, _, status, res = string.find(resp, "^(%d+)%s+%w+%s+(.+)%s*$")
+        
+        local func, err = load(res)
+        if func == nil then
+          print("Error in stack information: " .. err)
+          return nil, nil, err
+        end
+        local ok, stack = pcall(func)
+        if not ok then
+          print("Error in stack information: " .. stack)
+          return nil, nil, stack
+        end
+        local frames = {}
+        -- for _,frame in ipairs(stack) do
+        -- print(mobdebug.line(frame[1], {comment = false}))
+        -- frames[#frames+1] = {
+            --     func = frame[1][1],
+            
+            -- -- }
+            -- for q, w in pairs(frame) do
+            --     print(q, w)
+            -- end
+            -- print(frame[1])
+            -- serpent = require("mobdebug_wrapper/scripts/serpent")
+            -- print(serpent.line(frame[1]))
+            -- for f, s in pairs(frame[1]) do
+            --     print(f, s)
+            -- end
+            
+            -- print(frame)
+            -- for q, w in pairs(frame) do
+            --     print(q, w)
+            --     for f, s in pairs(w) do
+            --         print(f, s)
+            --     end
+            -- end
+            -- local function printTable(key, value, level)
+            --     if level > 5 then
+            --         return
+            --     end
+            --     print(string.rep(">",level), key, value)
+            --     if type(value) == "table" then
+            --         for k, v in pairs(value) do
+            --             printTable(k, v, level+1)
+            --         end
+            --     end
+            -- end
+            
+            -- printTable("", frame, 0)
+        -- end
+        return stack
+    end
+end
+
 return wrapper

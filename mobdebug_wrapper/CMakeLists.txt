@@ -10,6 +10,8 @@ add_library( mobdebug_wrapper
                 SHARED
                 sources/main.c
                 sources/debugger.c
+                sources/collection.c
+                sources/stack.c
 				mobdebug_wrapper_exports.h)
 
 include(GenerateExportHeader)
