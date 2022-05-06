@@ -1,0 +1,2 @@
+type synthetic add -x "^.*Collection$" -l Formatter.Collection_SyntheticProvider
+type synthetic add -x "^.*Node$" -l Formatter.Node_SyntheticProvider
