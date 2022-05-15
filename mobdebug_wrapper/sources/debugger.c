@@ -335,6 +335,130 @@ struct Stack* luad_getStack(struct Debugger* self) {
     return result;
 }
 
+int luad_setWatch(struct Debugger* self, const char* expression) {
+    int result = LUAD_INVALID_INDEX;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "setWatch") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushstring(self->L, expression);
+        if(lua_pcall(self->L, 2, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            if(lua_isnumber(self->L, -1)) {
+                result = lua_tonumber(self->L, -1);
+            }
+            lua_remove(self->L, -1);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
+void luad_removeWatch(struct Debugger* self, int index) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "removeWatch") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushinteger(self->L, index);
+        lua_pcall(self->L, 2, 0, 0);
+    }
+    lua_remove(self->L, -1);
+}
+
+char* luad_getWatch(struct Debugger* self, int index) {
+    char* result = NULL;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "getWatch") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushnumber(self->L, index);
+        if(lua_pcall(self->L, 2, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            if(lua_isstring(self->L, -1)) {
+                const char* resultFromLua = lua_tostring(self->L, -1);
+                size_t size = strlen(resultFromLua);
+                result = (char*)malloc(sizeof(char)*(size+1));
+                strcpy(result, resultFromLua);
+            }
+            lua_remove(self->L, -1);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
+struct Collection* luad_getAllWatches(struct Debugger* self) {
+    struct Collection* result = collection_make();
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "getAllWatches") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            if(lua_istable(self->L, -1)) {
+                lua_pushnil(self->L);
+                while (lua_next(self->L, -2) != 0) {
+                    lua_pushvalue(self->L, -2);
+                    const char* key = lua_tostring(self->L, -1);
+                    lua_remove(self->L, -1);
+
+                    const char* value = lua_tostring(self->L, -1);
+                    lua_remove(self->L, -1);
+                    
+                    // TODO: LEAK!
+                    size_t size = strlen(value);
+                    char* newString = (char*)malloc(sizeof(char)*(size+1));
+                    strcpy(newString, value);
+                    collection_addValue(result, key, newString);
+                }
+            }
+            lua_remove(self->L, -1);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
+void luad_removeAllWatches(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "removeAllWatches") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pcall(self->L, 1, 0, 0);
+    }
+    lua_remove(self->L, -1);
+}
+
+int luad_getCurrentWatchId(struct Debugger* self) {
+    int result = LUAD_INVALID_INDEX;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "getCurrentWatchId") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            if(lua_isnumber(self->L, -1)) {
+                result = lua_tonumber(self->L, -1);
+            }
+            lua_remove(self->L, -1);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
 void luad_test(struct Debugger* self) {
     lua_pushlightuserdata(self->L, (void *)&Key);
     lua_gettable(self->L, LUA_REGISTRYINDEX);

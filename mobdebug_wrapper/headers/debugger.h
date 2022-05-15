@@ -2,6 +2,7 @@
 #define H_DEBUGGER
 
 #include <lua.h>
+#include "collection.h"
 #include "mobdebug_wrapper_exports.h"
 
 enum DebuggerStatus {
@@ -38,6 +39,14 @@ void MOBDEBUG_WRAPPER_EXPORTS luad_getCurrentBreakpoint(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_setStatusChangeCallback(struct Debugger* self, ChangeStateCallbackFunction function);
 void MOBDEBUG_WRAPPER_EXPORTS luad_handle(struct Debugger* self, const char* command);
 MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_getStack(struct Debugger* self);
+MOBDEBUG_WRAPPER_EXPORTS int luad_setWatch(struct Debugger* self, const char* expression);
+void MOBDEBUG_WRAPPER_EXPORTS luad_removeWatch(struct Debugger* self, int index);
+MOBDEBUG_WRAPPER_EXPORTS char* luad_getWatch(struct Debugger* self, int index);
+MOBDEBUG_WRAPPER_EXPORTS struct Collection* luad_getAllWatches(struct Debugger* self);
+void MOBDEBUG_WRAPPER_EXPORTS luad_removeAllWatches(struct Debugger* self);
+MOBDEBUG_WRAPPER_EXPORTS int luad_getCurrentWatchId(struct Debugger* self);
+
+const int LUAD_INVALID_INDEX = -1;
 
 void MOBDEBUG_WRAPPER_EXPORTS luad_test(struct Debugger* self);
 

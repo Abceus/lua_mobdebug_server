@@ -33,6 +33,14 @@ function wrapper:update()
                     line = tonumber(line)
                 }
             end
+        elseif status == "203" then
+            _, _, file, line, watch_idx = string.find(breakpoint, "^203 Paused%s+(.-)%s+(%d+)%s+(%d+)%s*$")
+            if file and line and watch_idx then
+                return status, {
+                    filename = file,
+                    line = tonumber(line)
+                }, tonumber(watch_idx)
+            end
         end
         return status
     end
@@ -71,9 +79,28 @@ function wrapper:removeBreakpoint(filename, line)
 end
 
 function wrapper:removeAllBreakpoints()
-    print("Call client removeAllBreakpoints function with argemunets")
+    print("Call client removeAllBreakpoints function")
     if self.client then
         self.client:send("DELB * 0 \n")
+    end
+	return self.client == nil or self.client:receive("*l") == "200 OK"
+end
+
+function wrapper:setWatch(expression)
+    print("Call client setWatch function with argemunets " .. expression)
+    if self.client then
+        self.client:send("SETW " .. expression .. "\n")
+        local answer = self.client:receive("*l")
+        local _, _, watch_idx = string.find(answer, "^200 OK (%d+)%s*$")
+        return watch_index and tonumber(watch_idx) or watch_idx
+    end
+	return 0
+end
+
+function wrapper:removeWatch(index)
+    print("Call client removeWatch function with argemunets " .. index)
+    if self.client then
+        self.client:send("DELW " .. index .. "\n")
     end
 	return self.client == nil or self.client:receive("*l") == "200 OK"
 end

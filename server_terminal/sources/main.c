@@ -16,9 +16,19 @@ void printChahgedStatus(enum DebuggerStatus newStatus) {
         printf("Continue\n");
         luad_getCurrentBreakpoint(d);
 		if(d->currentBreakpoint != NULL) {
+            struct Stack* stack = luad_getStack(d);
+            int watchId = luad_getCurrentWatchId(d);
+            struct Coollection* allWatches = luad_getAllWatches(d);
+            const char* currentWatch = luad_getWatch(d, watchId);
+            if(watchId == 2) {
+                luad_removeAllWatches(d);
+            }
+            else {
+                luad_removeWatch(d, watchId);
+            }
 			printf("Program breaked in file %s line %d\n", d->currentBreakpoint->filename, d->currentBreakpoint->line);
+            luad_run(d);
 		}
-        luad_getStack(d);
     }
 }
 
@@ -31,8 +41,11 @@ int main() {
     // luad_pause(d);
     // printf("%d\n", luad_getStatus(d));
     // luad_setBreakpoint(d, "d:/workspace/lua_debug/test.lua", 7);
-    luad_setBreakpoint(d, "start.lua", 12);
+    // luad_setBreakpoint(d, "start.lua", 12);
     // luad_removeBreakpoint(d, "./test.lua", 12);
+    luad_setWatch(d, "i == 1");
+    luad_setWatch(d, "i == 2");
+    luad_setWatch(d, "i == 3");
     luad_connect(d);
     luad_run(d);
     while(true) {
