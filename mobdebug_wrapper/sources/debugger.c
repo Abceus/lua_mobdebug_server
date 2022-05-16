@@ -76,6 +76,102 @@ void luad_run(struct Debugger* self) {
     lua_remove(self->L, -1);
 }
 
+void luad_step(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "step") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found step function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_over(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "over") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found over function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_out(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "out") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found out function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_reload(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "reload") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found reload function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_done(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "done") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found done function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_exit(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "exit") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 0, 0) != LUA_OK) {
+            printf("Error: %s\n", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    else {
+        printf("Error: not found exit function\n");
+    }
+    lua_remove(self->L, -1);
+}
+
 void luad_update(struct Debugger* self) {
     lua_pushlightuserdata(self->L, (void *)&Key);
     lua_gettable(self->L, LUA_REGISTRYINDEX);
@@ -132,6 +228,16 @@ void luad_removeBreakpoint(struct Debugger* self, const char* filename, int line
         lua_pushstring(self->L, filename);
         lua_pushinteger(self->L, line);
         lua_pcall(self->L, 3, 0, 0);
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_removeAllBreakpoints(struct Debugger* self) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "removeAllBreakpoints") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pcall(self->L, 1, 0, 0);
     }
     lua_remove(self->L, -1);
 }

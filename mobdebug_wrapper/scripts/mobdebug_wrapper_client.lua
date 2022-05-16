@@ -13,6 +13,58 @@ function wrapper:run()
     return false
 end
 
+function wrapper:step()
+    print("Call client step function")
+    if self.client then
+        self.client:send("STEP\n")
+        return self.client:receive("*l") == "200 OK"
+    end
+    return false
+end
+
+function wrapper:over()
+    print("Call client over function")
+    if self.client then
+        self.client:send("OVER\n")
+        return self.client:receive("*l") == "200 OK"
+    end
+    return false
+end
+
+function wrapper:out()
+    print("Call client out function")
+    if self.client then
+        self.client:send("OUT\n")
+        return self.client:receive("*l") == "200 OK"
+    end
+    return false
+end
+
+function wrapper:reload()
+    print("Call client reload function")
+    if self.client then
+        self.client:send("LOAD 0 -\n")
+        return self.client:receive("*l") == "200 OK"
+    end
+    return false
+end
+
+function wrapper:done()
+    print("Call client done function")
+    if self.client then
+        self.client:send("DONE\n")
+    end
+end
+
+function wrapper:exit()
+    print("Call client exit function")
+    if self.client then
+        self.client:send("EXIT\n")
+        return self.client:receive("*l") == "200 OK"
+    end
+    return true
+end
+
 function wrapper:update()
     if self.client then
         self.client:settimeout(0)

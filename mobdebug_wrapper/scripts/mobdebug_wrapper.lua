@@ -40,10 +40,63 @@ end
 
 function wrapper:run()
     self.printFunction("Call run function")
+    if self.client:run() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("running")
+    end
+end
+
+function wrapper:step()
+    self.printFunction("Call step function")
+    if self.client:step() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("running")
+    end
+end
+
+function wrapper:over()
+    self.printFunction("Call over function")
+    if self.client:over() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("running")
+    end
+end
+
+function wrapper:out()
+    self.printFunction("Call out function")
+    if self.client:out() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("running")
+    end
+end
+
+function wrapper:reload()
+    self.printFunction("Call reload function")
+    if self.client:reload() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("running")
+    end
+end
+
+function wrapper:done()
+    self.printFunction("Call done function")
     self.currentBreakpoint = nil
     self.currentWatchId = -1
-    if self.client:run() then
-        self:setStatus("running")
+    self:setStatus("inited")
+    self.client:done()
+end
+
+function wrapper:exit()
+    self.printFunction("Call exit function")
+    if self.client:exit() then
+        self.currentBreakpoint = nil
+        self.currentWatchId = -1
+        self:setStatus("inited")
     end
 end
 
