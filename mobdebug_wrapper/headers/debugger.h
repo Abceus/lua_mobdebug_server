@@ -52,6 +52,8 @@ MOBDEBUG_WRAPPER_EXPORTS char* luad_getWatch(struct Debugger* self, int index);
 MOBDEBUG_WRAPPER_EXPORTS struct Collection* luad_getAllWatches(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_removeAllWatches(struct Debugger* self);
 MOBDEBUG_WRAPPER_EXPORTS int luad_getCurrentWatchId(struct Debugger* self);
+MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_evaluates(struct Debugger* self, const char* expression);
+MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_execute(struct Debugger* self, const char* expression);
 
 const int LUAD_INVALID_INDEX = -1;
 

@@ -565,6 +565,54 @@ int luad_getCurrentWatchId(struct Debugger* self) {
     return result;
 }
 
+struct Stack* luad_evaluates(struct Debugger* self, const char* expression) {
+    struct Stack* result = NULL;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "evaluates") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushstring(self->L, expression);
+        if(lua_pcall(self->L, 2, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            struct Collection* collection = collection_make();
+            result = stack_make();
+            result->rootNode = stack_createNode("root", NULL);
+            generate_node(self, collection, result->rootNode);
+            fflush(stdout);
+            free(collection);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
+struct Stack* luad_execute(struct Debugger* self, const char* expression) {
+    struct Stack* result = NULL;
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "execute") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushstring(self->L, expression);
+        if(lua_pcall(self->L, 2, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            struct Collection* collection = collection_make();
+            result = stack_make();
+            result->rootNode = stack_createNode("root", NULL);
+            generate_node(self, collection, result->rootNode);
+            fflush(stdout);
+            free(collection);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
 void luad_test(struct Debugger* self) {
     lua_pushlightuserdata(self->L, (void *)&Key);
     lua_gettable(self->L, LUA_REGISTRYINDEX);

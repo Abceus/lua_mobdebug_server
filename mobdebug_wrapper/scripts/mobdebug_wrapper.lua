@@ -22,7 +22,7 @@ function wrapper:connect()
     self.printFunction("Lua Remote Debugger")
     self.printFunction("Run the program you wish to debug")
     
-    local server = socket.bind(host, port)
+    local server = socket.bind(host, port) -- TODO check success
     self.client:setClient(server:accept())
     self.client:removeAllBreakpoints()
 
@@ -276,6 +276,23 @@ end
 function wrapper:removeAllWatchesServer()
     self.printFunction("Call removeAllWatchesServer")
     self.watches = {}
+end
+
+function wrapper:evaluates(expression)
+    self.printFunction("Call evaluates")
+    expression = "return " .. expression 
+    if self.client then
+        local _, result, error = self.client:execute(expression)
+        return result
+    end
+end
+
+function wrapper:execute(expression)
+    self.printFunction("Call evaluates")
+    if self.client then
+        local _, result, error = self.client:execute(expression)
+        return result
+    end
 end
 
 function wrapper:test()

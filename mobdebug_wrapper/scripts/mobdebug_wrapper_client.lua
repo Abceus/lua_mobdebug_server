@@ -1,5 +1,8 @@
 local wrapper = {}
 
+local loadstring = loadstring or load -- "load" replaced "loadstring" in Lua 5.2
+local unpack = table.unpack or unpack
+
 function wrapper:setClient(client)
     self.client = client
 end
@@ -63,6 +66,53 @@ function wrapper:exit()
         return self.client:receive("*l") == "200 OK"
     end
     return true
+end
+
+local getEvalResult = function(client)
+      local params, err = client:receive("*l")
+      if not params then
+        return nil, nil, "Debugger connection " .. (err or "error")
+      end
+      local _, _, status, len = string.find(params, "^(%d+).-%s+(%d+)%s*$")
+      if status == "200" then
+        len = tonumber(len)
+        if len > 0 then
+          local status, res
+          local str = client:receive(len)
+          -- handle serialized table with results
+          local func, err = loadstring(str)
+          if func then
+            status, res = pcall(func)
+            if not status then err = res
+            elseif type(res) ~= "table" then
+              err = "received "..type(res).." instead of expected 'table'"
+            end
+          end
+          if err then
+            print("Error in processing results: " .. err)
+            return nil, nil, "Error in processing results: " .. err
+          end
+          print(unpack(res))
+          return res[1], res
+        end
+      elseif status == "401" then
+        len = tonumber(len)
+        local res = client:receive(len)
+        print("Error in expression: " .. res)
+        return nil, nil, res
+      else
+        print("Unknown error")
+        return nil, nil, "Debugger error: unexpected response after EXEC/LOAD '" .. params .. "'"
+      end
+end
+
+function wrapper:execute(expression)
+    print("Call client execute")
+    expression = expression:gsub("\n", "\r")
+    if self.client then
+        self.client:send("EXEC " .. expression .. "\n")
+        return getEvalResult(self.client)
+    end
 end
 
 function wrapper:update()

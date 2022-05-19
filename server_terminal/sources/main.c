@@ -26,6 +26,8 @@ void printChahgedStatus(enum DebuggerStatus newStatus) {
             else {
                 luad_removeWatch(d, watchId);
             }
+            luad_execute(d, "jopa=100");
+            luad_evaluates(d, "jopa+15");
 			printf("Program breaked in file %s line %d\n", d->currentBreakpoint->filename, d->currentBreakpoint->line);
             luad_run(d);
 		}
