@@ -41,6 +41,7 @@ void MOBDEBUG_WRAPPER_EXPORTS luad_pause(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_setBreakpoint(struct Debugger* self, const char* filename, int line);
 void MOBDEBUG_WRAPPER_EXPORTS luad_removeBreakpoint(struct Debugger* self, const char* filename, int line);
 void MOBDEBUG_WRAPPER_EXPORTS luad_removeAllBreakpoints(struct Debugger* self);
+MOBDEBUG_WRAPPER_EXPORTS struct Collection* luad_getAllBrealpoints(struct Debugger* self);
 MOBDEBUG_WRAPPER_EXPORTS enum DebuggerStatus luad_getStatus(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_getCurrentBreakpoint(struct Debugger* self);
 void MOBDEBUG_WRAPPER_EXPORTS luad_setStatusChangeCallback(struct Debugger* self, ChangeStateCallbackFunction function);

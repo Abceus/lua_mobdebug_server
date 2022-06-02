@@ -1,4 +1,5 @@
 #include "collection.h"
+#include <stdlib.h>
 
 struct Collection* collection_make() {
     struct Collection* result = (struct Collection*)malloc(sizeof(struct Collection));

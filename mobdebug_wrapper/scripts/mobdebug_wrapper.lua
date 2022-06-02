@@ -179,6 +179,20 @@ function wrapper:getCurrentBreakpoint()
 	return self.currentBreakpoint
 end
 
+function wrapper:getAllBreakpoints()
+    self.printFunction("Call getAllBreakpoints function")
+    local result = {}
+    for filename, linesInFile in pairs(self.breakpoints) do
+        for line, _ in pairs(linesInFile) do
+            result[#result+1] = {
+                filename = filename,
+                line = tonumber(line)
+            }
+        end
+    end
+    return result
+end
+
 function wrapper:getCurrentWatchId()
     self.printFunction("Call getCurrentWatchId function")
 	return self.currentWatchId

@@ -242,6 +242,47 @@ void luad_removeAllBreakpoints(struct Debugger* self) {
     lua_remove(self->L, -1);
 }
 
+struct Collection* luad_getAllBrealpoints(struct Debugger* self) {
+    struct Collection* result = collection_make();
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "getAllBreakpoints") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        if(lua_pcall(self->L, 1, 1, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+        else {
+            if(lua_istable(self->L, -1)) {
+                lua_pushnil(self->L);
+                while (lua_next(self->L, -2) != 0) {
+                    lua_pushvalue(self->L, -2);
+                    const char* key = lua_tostring(self->L, -1);
+                    lua_remove(self->L, -1);
+
+                    lua_getfield(self->L, -1, "filename");
+                    const char* fname = lua_tostring(self->L, -1);
+                    size_t fnameLen = strlen(fname);
+                    struct Breakpoint* breakpoint = malloc(sizeof(struct Breakpoint));
+                    breakpoint->filename = (char*)calloc(fnameLen+1, sizeof(char));
+                    strcpy(breakpoint->filename, fname);
+                    lua_remove(self->L, -1);
+                    lua_getfield(self->L, -1, "line");
+                    breakpoint->line = lua_tointeger(self->L, -1);
+                    lua_remove(self->L, -1);
+                    lua_remove(self->L, -1);
+                    
+                    // TODO: LEAK!
+                    collection_addValue(result, key, breakpoint);
+                }
+            }
+            lua_remove(self->L, -1);
+        }
+    }
+    lua_remove(self->L, -1);
+    return result;
+}
+
 enum DebuggerStatus getStatusFromString(const char* str) {
     struct Pair {
         char* name;

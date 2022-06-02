@@ -128,7 +128,7 @@ function wrapper:update()
         if status == "200" then
             self.currentBreakpoint = nil
         elseif status == "202" then
-            _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
+            local _, _, file, line = string.find(breakpoint, "^202 Paused%s+(.-)%s+(%d+)%s*$")
             if file and line then
                 return status, {
                     filename = file,
@@ -136,7 +136,7 @@ function wrapper:update()
                 }
             end
         elseif status == "203" then
-            _, _, file, line, watch_idx = string.find(breakpoint, "^203 Paused%s+(.-)%s+(%d+)%s+(%d+)%s*$")
+            local _, _, file, line, watch_idx = string.find(breakpoint, "^203 Paused%s+(.-)%s+(%d+)%s+(%d+)%s*$")
             if file and line and watch_idx then
                 return status, {
                     filename = file,
