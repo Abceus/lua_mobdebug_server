@@ -654,6 +654,49 @@ struct Stack* luad_execute(struct Debugger* self, const char* expression) {
     return result;
 }
 
+const char* getMode(enum OutputMode mode) {
+    switch (mode) {
+    case DEFAULT: {
+        return "r";
+    }
+    case REDIRECT: {
+        return "r";
+    }
+    case COPY: {
+        return "c";
+    }
+    }
+    return NULL;
+}
+
+void luad_redirectOutput(struct Debugger* self, enum OutputMode mode) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "redirectOutput") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushstring(self->L, getMode(mode));
+        if(lua_pcall(self->L, 2, 0, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    lua_remove(self->L, -1);
+}
+
+void luad_setBasedir(struct Debugger* self, const char* path) {
+    lua_pushlightuserdata(self->L, (void *)&Key);
+    lua_gettable(self->L, LUA_REGISTRYINDEX);
+    if(lua_getfield(self->L, -1, "setBasedir") == LUA_TFUNCTION) {
+        lua_pushvalue(self->L, -2);
+        lua_pushstring(self->L, path);
+        if(lua_pcall(self->L, 2, 0, 0) != LUA_OK) {
+            printf("Error: %s", lua_tostring(self->L, -1));
+            fflush(stdout);
+        }
+    }
+    lua_remove(self->L, -1);
+}
+
 void luad_test(struct Debugger* self) {
     lua_pushlightuserdata(self->L, (void *)&Key);
     lua_gettable(self->L, LUA_REGISTRYINDEX);

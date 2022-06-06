@@ -143,6 +143,13 @@ function wrapper:update()
                     line = tonumber(line)
                 }, tonumber(watch_idx)
             end
+        elseif status == "204" then
+            local _, _, stream, size = string.find(breakpoint, "^204 Output (%w+) (%d+)$")
+            if stream and size then
+                local size = tonumber(size)
+                local msg = size > 0 and self:getMessage(size) or ""
+                return status, nil, nil, msg
+            end
         end
         return status
     end
@@ -235,6 +242,41 @@ function wrapper:getStack()
         return stack
     end
     return nil, "Client not connected"
+end
+
+function wrapper:setBasedir(dir)
+    print("Call client setBasedir function with " .. dir)
+    if self.client then
+        self.client:send("BASEDIR "..dir.."\n")
+        local resp, err = self.client:receive("*l")
+        if not resp then
+          return false, "Debugger connection error: "..err
+        end
+        local _, _, status = string.find(resp, "^(%d+)%s+%w+%s*$")
+        if status ~= "200" then
+          return true
+        else
+          return false, "Debugger error: unexpected response after BASEDIR"
+        end
+    end
+    return true
+end
+
+function wrapper:getMessage(size)
+    print("Call client getMessage function with " .. size)
+    if self.client then
+        return self.client:receive(size)
+    end
+    return ""
+end
+
+function wrapper:redirectOutput(mode)
+    print("Call client redirectOutput with " .. mode)
+    if self.client then
+        self.client:send("OUTPUT stdout "..mode.."\n")
+        return self.client:receive("*l")
+    end
+    return true
 end
 
 return wrapper

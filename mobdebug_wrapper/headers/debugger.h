@@ -12,6 +12,12 @@ enum DebuggerStatus {
     BREAK
 };
 
+enum OutputMode {
+    DEFAULT,
+    COPY,
+    REDIRECT
+};
+
 struct Breakpoint {
 	char* filename;
 	int line;
@@ -55,6 +61,8 @@ void MOBDEBUG_WRAPPER_EXPORTS luad_removeAllWatches(struct Debugger* self);
 MOBDEBUG_WRAPPER_EXPORTS int luad_getCurrentWatchId(struct Debugger* self);
 MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_evaluates(struct Debugger* self, const char* expression);
 MOBDEBUG_WRAPPER_EXPORTS struct Stack* luad_execute(struct Debugger* self, const char* expression);
+void MOBDEBUG_WRAPPER_EXPORTS luad_redirectOutput(struct Debugger* self, enum OutputMode mode);
+void MOBDEBUG_WRAPPER_EXPORTS luad_setBasedir(struct Debugger* self, const char* path);
 
 const int LUAD_INVALID_INDEX = -1;
 

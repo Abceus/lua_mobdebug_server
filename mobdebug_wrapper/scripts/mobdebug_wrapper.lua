@@ -1,15 +1,35 @@
 local wrapper = {}
 
+local function removebasedir(path, basedir)
+    local function q(s) return string.gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
+
+    local win = os and os.getenv and (os.getenv('WINDIR') or (os.getenv('OS') or ''):match('[Ww]indows')) and true or false
+    local mac = not win and (os and os.getenv and os.getenv('DYLD_LIBRARY_PATH') or not io.open("/proc")) and true or false
+    local iscasepreserving = win or (mac and io.open('/library') ~= nil)
+
+    if iscasepreserving then
+      -- check if the lowercased path matches the basedir
+      -- if so, return substring of the original path (to not lowercase it)
+      return path:lower():find('^'..q(basedir:lower()))
+        and path:sub(#basedir+1) or path
+    else
+      return string.gsub(path, '^'..q(basedir), '')
+    end
+    return ""
+  end
+
 function wrapper:init()
 	self.breakpoints = {}
     self.watches = {}
 	self.currentBreakpoint = nil
 	self.currentWatchId = -1
     self:setPrintFunction(print)
+    self:setOutputFunction(print)
     self.printFunction("Call init function")
     self.status = "inited"
     self.statusChangeCallback = nil
     self.client = require("mobdebug_wrapper/scripts/mobdebug_wrapper_client")
+    self.basedir = ""
 end
 
 function wrapper:connect()
@@ -24,18 +44,18 @@ function wrapper:connect()
     
     local server = socket.bind(host, port) -- TODO check success
     self.client:setClient(server:accept())
-    self.client:removeAllBreakpoints()
+    -- self.client:removeAllBreakpoints()
 
-    for filename, lines in pairs(self.breakpoints) do
-        for line, _ in pairs(lines) do
-            self.client:setBreakpoint(filename, line)
-        end
-    end
+    -- for filename, lines in pairs(self.breakpoints) do
+    --     for line, _ in pairs(lines) do
+    --         self.client:setBreakpoint(filename, line)
+    --     end
+    -- end
 
-    self:removeAllWatchesClient()
-    for _, watchExpression in pairs(self.watches) do
-        self.client:setWatch(watchExpression)
-    end
+    -- self:removeAllWatchesClient()
+    -- for _, watchExpression in pairs(self.watches) do
+    --     self.client:setWatch(watchExpression)
+    -- end
 end
 
 function wrapper:run()
@@ -101,7 +121,7 @@ function wrapper:exit()
 end
 
 function wrapper:update()
-    local status, breakpoint, watcherId = self.client:update()
+    local status, breakpoint, watcherId, message = self.client:update()
     if status then
         if status == "200" then
             self.currentBreakpoint = nil
@@ -113,6 +133,8 @@ function wrapper:update()
             self.currentBreakpoint = breakpoint
             self.currentWatchId = watcherId
             self:setStatus("break")
+        elseif status == "204" then
+            self.outputFunction(message)
         end
     end
 end
@@ -130,6 +152,7 @@ end
 
 function wrapper:setBreakpoint(filename, line)
     self.printFunction("Call setBreakpoint function with argemunets", filename, line)
+    filename = removebasedir(filename, self.basedir)
 	if self.client:setBreakpoint(filename, line) then
         self:setBreakpointServer(filename, line)
     end
@@ -145,6 +168,7 @@ end
 
 function wrapper:removeBreakpoint(filename, line)
     self.printFunction("Call removeBreakpoint function with argemunets", filename, line)
+    filename = removebasedir(filename, self.basedir)
     if self.client:removeBreakpoint(filename, line) then
         self:removeBreakpointServer(filename, line)
     end
@@ -171,6 +195,7 @@ end
 
 function wrapper:hasBreakpoint(filename, line)
     self.printFunction("Call hasBreakpoint function with argemunets", filename, line)
+    filename = removebasedir(filename, self.basedir)
 	return self.breakpoints[filename] and self.breakpoints[filename][line]
 end
 
@@ -222,6 +247,15 @@ function wrapper:setPrintFunction(fnc)
         self.printFunction = print
     end
     self.printFunction("Call setPrintFunction function")
+end
+
+function wrapper:setOutputFunction(fnc)
+    if fnc ~= nil then
+        self.outputFunction = fnc
+    else
+        self.outputFunction = print
+    end
+    self.printFunction("Call setOutputFunction function")
 end
 
 function wrapper:handle(command)
@@ -307,6 +341,27 @@ function wrapper:execute(expression)
         local _, result, error = self.client:execute(expression)
         return result
     end
+end
+
+function wrapper:setBasedir(dir)
+    self.printFunction("Call setBasedir")
+    dir = string.gsub(dir, "\\", "/")
+    if not string.find(dir, "/$") then dir = dir .. "/" end
+
+    local remdir = dir:match("\t(.+)")
+    if remdir then dir = dir:gsub("/?\t.+", "/") end
+
+    local success, error = self.client:setBasedir(remdir or dir)
+    if success then
+        self.basedir = dir
+    else
+        self.printFunction(error)
+    end
+end
+
+function wrapper:redirectOutput(mode)
+    self.printFunction("Call redirectOutput with " .. mode)
+    self.client:redirectOutput(mode)
 end
 
 function wrapper:test()
